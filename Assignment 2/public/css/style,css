@@ -1,0 +1,90 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+    background-color: #f9f9f9;
+}
+
+h2 {
+    color: black;
+}
+
+button {
+    margin: 10px;
+    padding: 10px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: default; /* Default cursor for non-hover state */
+}
+
+button:hover {
+    background-color: orange;
+    cursor: pointer; /* Pointer cursor only on hover */
+}
+
+a {
+    margin: 10px;
+    text-decoration: none; /* Remove underline from links */
+}
+
+.heading {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.actions-container {
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+}
+
+.books-table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.books-table th, .books-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.books-table th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Additional styles for form inputs */
+input[type="text"], input[type="number"] {
+    margin: 10px;
+    padding: 10px;
+    font-size: 16px;
+    width: 80%;
+    max-width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Style for form buttons */
+form button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: default; /* Default cursor for non-hover state */
+}
+
+form button:hover {
+    background-color: orange;
+    cursor: pointer; /* Pointer cursor only on hover */
+}
