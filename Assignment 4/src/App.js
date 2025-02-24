@@ -11,7 +11,7 @@ const App = () => {
 
   // Fetch books from the backend
   useEffect(() => {
-    fetch('http://localhost:5000/api/books') 
+    fetch('http://localhost:5000/api/books') // Replace with your backend endpoint
       .then((response) => response.json())
       .then((data) => setBooks(data))
       .catch((error) => console.error('Error fetching books:', error));
@@ -64,8 +64,8 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home books={books} />} />
           <Route path="/create" element={<CreateBook addBook={addBook} />} />
-          <Route path="/update" element={<UpdateBook books={books} updateBook={updateBook} />} />
-          <Route path="/delete" element={<DeleteBook books={books} deleteBook={deleteBook} />} />
+          <Route path="/update/:id" element={<UpdateBook books={books} updateBook={updateBook} />} /> {/* Add :id parameter */}
+          <Route path="/delete/:id" element={<DeleteBook books={books} deleteBook={deleteBook} />} /> {/* Add :id parameter */}
         </Routes>
       </div>
     </Router>
