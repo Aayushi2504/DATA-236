@@ -141,15 +141,16 @@ const RestaurantList = () => {
                   <img src={restaurant.images} alt={restaurant.name} className="restaurant-image" />
                   {isLoggedIn && (
                     <button
-                      onClick={() => handleFavouriteToggle(restaurant.id)}
-                      className="favourite-button"
-                    >
-                      {favourites[restaurant.id] ? (
-                        <FaHeart color="red" />
-                      ) : (
-                        <FaRegHeart color="gray" />
-                      )}
-                    </button>
+                    onClick={() => handleFavouriteToggle(restaurant.id)}
+                    className="favourite-button"
+                    title={favourites[restaurant.id] ? "Remove from Favourites" : "Add to Favourites"}
+                  >
+                    {favourites[restaurant.id] ? (
+                      <FaHeart className="fav-icon active" />
+                    ) : (
+                      <FaRegHeart className="fav-icon" />
+                    )}
+                  </button>                  
                   )}
                 </div>
                 <div className="restaurant-details">
