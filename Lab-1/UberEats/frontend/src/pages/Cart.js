@@ -30,13 +30,13 @@ const Cart = () => {
     try {
       await placeOrder({
         customer_id: customerId,
-        restaurant_id: 1, // Replace with the actual restaurant ID
-        status: 'New', // Initial status
-        items: cartItems // Include the cart items in the order
+        restaurant_id: 1, // Replace with actual restaurant ID
+        status: 'New',
+        items: cartItems,
       });
       alert('Order placed successfully!');
       setCartItems([]); // Clear cart after order
-      navigate('/restaurants'); // Redirect to the restaurant list page
+      navigate('/restaurants'); // Redirect to restaurant list
     } catch (error) {
       console.error('Error placing order:', error);
     }
@@ -51,12 +51,29 @@ const Cart = () => {
     );
   };
 
-  const handleRemoveItem = (itemId) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
-  };
+  const handleRemoveItem = async (cartId) => {
+    try {
+      console.log(`Deleting cart item with ID: ${cartId}`); // Debugging
+  
+      const response = await fetch(`http://localhost:5000/api/customer/cart/${cartId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to remove item from cart');
+      }
+  
+      setCartItems((prevItems) => prevItems.filter((item) => item.id !== cartId));
+      console.log('Item successfully removed from UI');
+    } catch (error) {
+      console.error('Error removing item:', error);
+    }
+  }; 
 
   const calculateTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    return cartItems.reduce((total, item) => total + Number(item.price) * item.quantity, 0);
   };
 
   if (loading) return <LoadingSpinner />;
@@ -75,7 +92,7 @@ const Cart = () => {
                 <img src={item.image} alt={item.name} className="cart-item-image" />
                 <div className="cart-item-details">
                   <h3 className="cart-item-title">{item.name}</h3>
-                  <p className="cart-item-price"> ${Number(item.price).toFixed(2)}</p>
+                  <p className="cart-item-price">${Number(item.price).toFixed(2)}</p>
                   <div className="cart-item-quantity">
                     <button onClick={() => handleQuantityChange(item.id, item.quantity - 1)}>-</button>
                     <span>{item.quantity}</span>
