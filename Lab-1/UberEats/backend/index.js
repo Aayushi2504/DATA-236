@@ -108,6 +108,26 @@ app.post('/api/customer/logout', (req, res) => {
   });
 });
 
+// View customer profile
+app.get('/api/customer/profile/:customer_id', (req, res) => {
+  const { customer_id } = req.params;
+  console.log("Fetching profile for customer ID:", customer_id); // Debugging
+
+  const sql = 'SELECT * FROM customers WHERE id = ?';
+  db.query(sql, [customer_id], (err, result) => {
+    if (err) {
+      console.error("Database error:", err); // Debugging
+      return res.status(500).json({ error: 'Database error' });
+    }
+    if (result.length === 0) {
+      console.log("Customer not found for ID:", customer_id); // Debugging
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    console.log("Profile data:", result[0]); // Debugging
+    res.json(result[0]);
+  });
+});
+
 //Customer Profile Update
 app.put('/api/customer/profile/:customer_id', (req, res) => {
   const { customer_id } = req.params;
@@ -164,15 +184,14 @@ app.get('/api/restaurant/:restaurant_id', (req, res) => {
 });
 
 //Adding Restaurant to Favourites
+// Adding Restaurant to Favourites
 app.post('/api/customer/favorites', (req, res) => {
   const { customer_id, restaurant_id } = req.body;
 
-  // Validate input
   if (!customer_id || !restaurant_id) {
     return res.status(400).json({ error: 'Customer ID and Restaurant ID are required' });
   }
 
-  // Insert the favorite into the database
   const sql = 'INSERT INTO favorites (customer_id, restaurant_id) VALUES (?, ?)';
   db.query(sql, [customer_id, restaurant_id], (err, result) => {
     if (err) return res.status(500).json({ error: 'Database error' });
@@ -231,15 +250,14 @@ app.get('/api/dishes', (req, res) => {
 });
 
 //Add dish to cart
+// Add dish to cart
 app.post('/api/customer/cart', (req, res) => {
   const { customer_id, dish_id, quantity } = req.body;
 
-  // Validate input
   if (!customer_id || !dish_id || !quantity) {
     return res.status(400).json({ error: 'Required fields are missing' });
   }
 
-  // Insert the dish into the cart
   const sql = 'INSERT INTO cart (customer_id, dish_id, quantity) VALUES (?, ?, ?)';
   db.query(sql, [customer_id, dish_id, quantity], (err, result) => {
     if (err) return res.status(500).json({ error: 'Database error' });
@@ -435,6 +453,29 @@ app.put('/api/restaurant/dishes/:dish_id', (req, res) => {
     if (err) return res.status(500).json({ error: 'Database error' });
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Dish not found' });
     res.json({ message: 'Dish updated successfully' });
+  });
+});
+
+// Fetch a single dish by dish_id
+app.get('/api/dish/:dish_id', (req, res) => {
+  const { dish_id } = req.params;
+  console.log("Fetching dish with ID:", dish_id); // Debugging
+
+  const sql = `SELECT * FROM dishes WHERE id = ?`;
+  db.query(sql, [dish_id], (err, result) => {
+    if (err) {
+      console.error("Database error:", err); // Debugging
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    console.log("Query Result:", result); // Debugging
+
+    if (result.length === 0) {
+      console.log("Dish not found for ID:", dish_id); // Debugging
+      return res.status(404).json({ error: 'Dish not found' });
+    }
+
+    res.json(result[0]); // Return the dish details
   });
 });
 
