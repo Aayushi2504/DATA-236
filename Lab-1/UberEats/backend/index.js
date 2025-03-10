@@ -157,7 +157,8 @@ app.get('/api/customer/orders/:customer_id', (req, res) => {
     JOIN order_items oi ON o.id = oi.order_id
     JOIN dishes d ON oi.dish_id = d.id
     WHERE o.customer_id = ?
-    GROUP BY o.id;
+    GROUP BY o.id
+    ORDER BY o.created_at DESC; 
   `;
 
   db.query(sql, [customer_id], (err, result) => {
