@@ -79,6 +79,7 @@ const RestaurantDashboard = () => {
     }
   };
 
+
   // Delete a dish
   const handleDeleteDish = async (dishId) => {
     try {
