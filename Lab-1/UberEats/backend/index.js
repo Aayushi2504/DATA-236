@@ -295,11 +295,10 @@ app.delete('/api/customer/cart/:cart_id', (req, res) => {
   });
 });
 
-//Clear Cart
+// Clear cart for a customer
 app.delete('/api/customer/cart/clear/:customer_id', (req, res) => {
   const { customer_id } = req.params;
 
-  // Clear the cart for the customer
   const sql = 'DELETE FROM cart WHERE customer_id = ?';
   db.query(sql, [customer_id], (err, result) => {
     if (err) return res.status(500).json({ error: 'Database error' });
