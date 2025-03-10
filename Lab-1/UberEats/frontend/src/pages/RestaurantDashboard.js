@@ -79,7 +79,6 @@ const RestaurantDashboard = () => {
     }
   };
 
-
   // Delete a dish
   const handleDeleteDish = async (dishId) => {
     try {
@@ -163,7 +162,7 @@ const RestaurantDashboard = () => {
         <p><strong>Location:</strong> {restaurant.location}</p>
         <p><strong>Contact Info:</strong> {restaurant.contact_info}</p>
         <p><strong>Timings:</strong> {restaurant.timings}</p>
-        <button onClick={() => navigate('/edit-profile')}>Edit Profile</button>
+        <button onClick={() => navigate('/restaurant-profile')}>Edit Profile</button>
       </section>
     </div>
   );
