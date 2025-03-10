@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaShoppingCart, FaHeart, FaUserCircle, FaSignOutAlt, FaCaretDown } from 'react-icons/fa';
+import './Navbar.css'; // Create this file for responsive navbar styles
 
 const Navbar = () => {
-  const { customerId, isLoggedIn, logout } = useAuth();
+  const { customerId, isLoggedIn, logout, isRestaurant } = useAuth();
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
 
   const isHomePage = location.pathname === '/';
-  const isRestaurantSpecificPage = location.pathname.startsWith('/restaurant-');
+  const isRestaurantSpecificPage = location.pathname.startsWith('/restaurant-') || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/manage-');
 
   const navbarStyles = {
     backgroundColor: isHomePage ? 'white' : '#FF6600',
@@ -20,7 +21,7 @@ const Navbar = () => {
   };
 
   const logoStyles = {
-    fontSize: '32px',
+    fontSize: '24px', // Smaller font size for mobile
     fontWeight: 'bold',
     color: isHomePage ? '#FF6600' : 'white',
     textDecoration: 'none',
@@ -30,7 +31,7 @@ const Navbar = () => {
   };
 
   const subtextStyles = {
-    fontSize: '16px',
+    fontSize: '14px', // Smaller font size for mobile
     color: isHomePage ? '#FF6600' : 'white',
     marginBottom: '4px',
   };
@@ -54,18 +55,37 @@ const Navbar = () => {
     fontSize: '16px',
   };
 
+  // Render different navbar for restaurant users
+  if (isRestaurantSpecificPage || isRestaurant) {
+    return (
+      <nav style={navbarStyles}>
+        <Link to="/" style={logoStyles}>
+          TastyEATS
+          <span style={subtextStyles}>for restaurants</span>
+        </Link>
+        <div style={styles.navLinks}>
+          {isLoggedIn && (
+            <button onClick={logout} style={logoutButtonStyles}>
+              <FaSignOutAlt style={styles.icon} /> Logout
+            </button>
+          )}
+        </div>
+      </nav>
+    );
+  }
+
+  // Default navbar for customers
   return (
     <nav style={navbarStyles}>
       <Link to="/" style={logoStyles}>
-        UberEATS
-        {isRestaurantSpecificPage && <span style={subtextStyles}>for restaurants</span>}
+        TastyEATS
       </Link>
       <div style={styles.navLinks}>
         {isLoggedIn ? (
           <>
             <div style={{ position: 'relative' }}>
-              <button 
-                onClick={() => setShowDropdown(!showDropdown)} 
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
                 style={{ ...linkStyles, background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 <FaUserCircle style={styles.icon} /> Profile <FaCaretDown />
@@ -102,11 +122,11 @@ const Navbar = () => {
 const styles = {
   navLinks: {
     display: 'flex',
-    gap: '20px',
+    gap: '10px', // Smaller gap for mobile
     alignItems: 'center',
   },
   icon: {
-    fontSize: '20px',
+    fontSize: '18px', // Smaller icon size for mobile
   },
   dropdown: {
     position: 'absolute',
