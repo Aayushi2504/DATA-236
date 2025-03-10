@@ -151,20 +151,19 @@ app.get('/api/customer/orders/:customer_id', (req, res) => {
       o.status,
       o.total,
       r.name AS restaurant_name,
-      GROUP_CONCAT(d.name SEPARATOR ', ') AS dish_names
+      GROUP_CONCAT(d.name SEPARATOR ', ') AS items  
     FROM orders o
     JOIN restaurants r ON o.restaurant_id = r.id
     JOIN order_items oi ON o.id = oi.order_id
     JOIN dishes d ON oi.dish_id = d.id
     WHERE o.customer_id = ?
-    GROUP BY o.id
-    ORDER BY o.created_at DESC;
+    GROUP BY o.id;
   `;
 
   db.query(sql, [customer_id], (err, result) => {
     if (err) {
       console.error('Database error:', err);
-      return res.status(500).json({ error: 'Database error' });
+      return res.status(500).json({ error: 'Database error', details: err.message });
     }
     res.json(result);
   });
