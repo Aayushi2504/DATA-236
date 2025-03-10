@@ -628,19 +628,41 @@ app.get('/api/restaurants/location', (req, res) => {
 //Orders
 
 //Customer Place Order
-app.post('/api/orders', (req, res) => {
-  const { customer_id, restaurant_id, status } = req.body;
+app.post('/api/orders', async (req, res) => {
+  const { customer_id, restaurant_id, status, items } = req.body;
 
   // Validate input
-  if (!customer_id || !restaurant_id || !status) {
+  if (!customer_id || !restaurant_id || !status || !items || items.length === 0) {
     return res.status(400).json({ error: 'Required fields are missing' });
   }
 
-  // Insert the order into the database
-  const sql = 'INSERT INTO orders (customer_id, restaurant_id, status) VALUES (?, ?, ?)';
-  db.query(sql, [customer_id, restaurant_id, status], (err, result) => {
+  // Start a transaction to ensure atomicity
+  db.beginTransaction(async (err) => {
     if (err) return res.status(500).json({ error: 'Database error' });
-    res.status(201).json({ message: 'Order placed successfully' });
+
+    try {
+      // Insert the order into the orders table
+      const orderSql = 'INSERT INTO orders (customer_id, restaurant_id, status) VALUES (?, ?, ?)';
+      const [orderResult] = await db.promise().query(orderSql, [customer_id, restaurant_id, status]);
+
+      const orderId = orderResult.insertId;
+
+      // Insert each item into the order_items table
+      const orderItemsSql = 'INSERT INTO order_items (order_id, dish_id, quantity) VALUES ?';
+      const orderItemsValues = items.map((item) => [orderId, item.dish_id, item.quantity]);
+
+      await db.promise().query(orderItemsSql, [orderItemsValues]);
+
+      // Commit the transaction
+      await db.promise().commit();
+
+      res.status(201).json({ message: 'Order placed successfully', orderId });
+    } catch (error) {
+      // Rollback the transaction in case of error
+      await db.promise().rollback();
+      console.error('Error placing order:', error);
+      res.status(500).json({ error: 'Database error' });
+    }
   });
 });
 
