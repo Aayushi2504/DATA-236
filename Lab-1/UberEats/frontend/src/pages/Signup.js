@@ -1,21 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './Signup.css'; // Add custom CSS for the signup page
+import './Signup.css'; // Updated CSS file
 
 const Signup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [country, setCountry] = useState('');
-  const [state, setState] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { loginCustomer } = useAuth();
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password || !country || !state) {
+    if (!name || !email || !password) {
       setError('All fields are required');
       return;
     }
@@ -23,19 +21,17 @@ const Signup = () => {
       const response = await fetch('http://localhost:5000/api/customer/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, country, state }),
+        body: JSON.stringify({ name, email, password }),
       });
       const data = await response.json();
       if (response.ok) {
-        // Ensure the backend returns the customer ID
         if (data.customer && data.customer.id) {
-          loginCustomer(data.customer.id); // Log in the user after successful signup
-          navigate('/restaurants'); // Redirect to restaurants page
+          loginCustomer(data.customer.id);
+          navigate('/profile'); // Redirect to profile page after signup
         } else {
           setError('Invalid response from server');
         }
       } else {
-        // Handle backend validation errors
         setError(data.error || 'Signup failed');
       }
     } catch (error) {
@@ -46,66 +42,48 @@ const Signup = () => {
 
   return (
     <div className="signup-container">
-      <h1>Signup</h1>
-      {error && <p className="error-message">{error}</p>}
-      <form onSubmit={handleSignup}>
-        <div className="form-group">
-          <label htmlFor="name">Name</label>
-          <input
-            type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="country">Country</label>
-          <input
-            type="text"
-            id="country"
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="state">State</label>
-          <input
-            type="text"
-            id="state"
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="signup-button">
-          Signup
-        </button>
-      </form>
-      <p className="login-link">
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
+      <div className="signup-box">
+        <h1>Signup</h1>
+        {error && <p className="error-message">{error}</p>}
+        <form onSubmit={handleSignup}>
+          <div className="form-group">
+            <label htmlFor="name">Name</label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit" className="signup-button">
+            Signup
+          </button>
+        </form>
+        <p className="login-link">
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
+      </div>
     </div>
   );
 };
