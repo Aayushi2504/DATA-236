@@ -18,7 +18,7 @@ const Home = () => {
   return (
     <div className="home-page">
       <div className="hero">
-        <h1>Order food to your door</h1>
+        <h1>Food at your fingertips!</h1>
         <div className="search-bar">
           <input
             type="text"
