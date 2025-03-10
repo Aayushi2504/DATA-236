@@ -28,17 +28,32 @@ const Cart = () => {
 
   const handlePlaceOrder = async () => {
     try {
+      // Place the order
       await placeOrder({
         customer_id: customerId,
         restaurant_id: 1, // Replace with actual restaurant ID
         status: 'New',
         items: cartItems,
       });
+
+      // Clear the cart on the backend
+      const clearCartResponse = await fetch(`http://localhost:5000/api/customer/cart/clear/${customerId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!clearCartResponse.ok) {
+        throw new Error('Failed to clear cart');
+      }
+
+      // Clear the cart on the frontend
+      setCartItems([]);
+
       alert('Order placed successfully!');
-      setCartItems([]); // Clear cart after order
       navigate('/restaurants'); // Redirect to restaurant list
     } catch (error) {
       console.error('Error placing order:', error);
+      alert('Failed to place order. Please try again.');
     }
   };
 
@@ -54,23 +69,23 @@ const Cart = () => {
   const handleRemoveItem = async (cartId) => {
     try {
       console.log(`Deleting cart item with ID: ${cartId}`); // Debugging
-  
+
       const response = await fetch(`http://localhost:5000/api/customer/cart/${cartId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to remove item from cart');
       }
-  
+
       setCartItems((prevItems) => prevItems.filter((item) => item.id !== cartId));
       console.log('Item successfully removed from UI');
     } catch (error) {
       console.error('Error removing item:', error);
     }
-  }; 
+  };
 
   const calculateTotalPrice = () => {
     return cartItems.reduce((total, item) => total + Number(item.price) * item.quantity, 0);
