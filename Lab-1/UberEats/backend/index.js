@@ -33,12 +33,12 @@ db.connect((err) => {
 
 //Customer
 
-//Customer Signup
+// Customer Signup
 app.post('/api/customer/signup', async (req, res) => {
-  const { name, email, password, country, state } = req.body;
+  const { name, email, password } = req.body;
 
   // Validate input
-  if (!name || !email || !password || !country || !state) {
+  if (!name || !email || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
@@ -48,27 +48,21 @@ app.post('/api/customer/signup', async (req, res) => {
     return res.status(400).json({ error: 'Invalid email format' });
   }
 
-  // Validate password length
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
-  }
-
   // Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Insert the customer into the database
-  const sql = 'INSERT INTO customers (name, email, password, country, state) VALUES (?, ?, ?, ?, ?)';
-  db.query(sql, [name, email, hashedPassword, country, state], (err, result) => {
+  const sql = 'INSERT INTO customers (name, email, password) VALUES (?, ?, ?)';
+  db.query(sql, [name, email, hashedPassword], (err, result) => {
     if (err) {
       if (err.code === 'ER_DUP_ENTRY') {
         return res.status(400).json({ error: 'Email already exists' });
       }
       return res.status(500).json({ error: 'Database error' });
     }
-    // Return the customer ID and other details
     res.status(201).json({ 
       message: 'Customer registered successfully', 
-      customer: { id: result.insertId, name, email } // Ensure this matches the frontend expectation
+      customer: { id: result.insertId, name, email }
     });
   });
 });
@@ -150,10 +144,31 @@ app.put('/api/customer/profile/:customer_id', (req, res) => {
 app.get('/api/customer/orders/:customer_id', (req, res) => {
   const { customer_id } = req.params;
 
-  // Fetch order history for the customer
-  const sql = 'SELECT * FROM orders WHERE customer_id = ?';
+  const sql = `
+    SELECT 
+      o.id AS order_id,
+      o.created_at,
+      o.status,
+      o.total,
+      r.name AS restaurant_name,
+      GROUP_CONCAT(d.name SEPARATOR ', ') AS dish_names
+    FROM orders o
+    JOIN restaurants r ON o.restaurant_id = r.id
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN dishes d ON oi.dish_id = d.id
+    WHERE o.customer_id = ?
+    GROUP BY o.id;
+  `;
+
+  console.log('Executing SQL Query:', sql.replace(/\s+/g, ' ').trim()); // Log formatted SQL
+  console.log('Customer ID:', customer_id); // Log the customer ID
+
   db.query(sql, [customer_id], (err, result) => {
-    if (err) return res.status(500).json({ error: 'Database error' });
+    if (err) {
+      console.error('Database error:', err); // Log detailed error
+      return res.status(500).json({ error: 'Database error', details: err.message });
+    }
+    console.log('Query Result:', result); // Log the result
     res.json(result);
   });
 });
