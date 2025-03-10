@@ -32,10 +32,6 @@ const RestaurantDashboard = () => {
           ordersResponse.json(),
         ]);
 
-        console.log('Restaurant Data:', restaurantData);
-        console.log('Dishes Data:', dishesData);
-        console.log('Orders Data:', ordersData);
-
         setRestaurant(restaurantData);
         setDishes(dishesData);
         setOrders(ordersData);
@@ -70,7 +66,7 @@ const RestaurantDashboard = () => {
       // Update the orders state with the new status
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
-          order.id === orderId ? { ...order, status } : order
+          order.order_id === orderId ? { ...order, status } : order
         )
       );
       alert('Order status updated successfully!');
@@ -112,13 +108,15 @@ const RestaurantDashboard = () => {
         ) : (
           <div className="orders-grid">
             {orders.map((order) => (
-              <div key={order.id} className="order-card">
-                <h3>Order #{order.id}</h3>
+              <div key={order.order_id} className="order-card">
+                <h3>Order #{order.order_id}</h3>
                 <p>Customer: {order.customer_name}</p>
+                <p>Dishes: {order.dish_names}</p>
+                <p>Total: ${Number(order.total).toFixed(2)}</p>                
                 <p>Status: {order.status}</p>
                 <select
                   value={order.status}
-                  onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
+                  onChange={(e) => handleUpdateStatus(order.order_id, e.target.value)}
                 >
                   <option value="New">New</option>
                   <option value="Preparing">Preparing</option>
