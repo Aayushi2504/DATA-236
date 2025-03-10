@@ -140,7 +140,7 @@ app.put('/api/customer/profile/:customer_id', (req, res) => {
   });
 });
 
-//View order history
+// View order history
 app.get('/api/customer/orders/:customer_id', (req, res) => {
   const { customer_id } = req.params;
 
@@ -157,18 +157,15 @@ app.get('/api/customer/orders/:customer_id', (req, res) => {
     JOIN order_items oi ON o.id = oi.order_id
     JOIN dishes d ON oi.dish_id = d.id
     WHERE o.customer_id = ?
-    GROUP BY o.id;
+    GROUP BY o.id
+    ORDER BY o.created_at DESC;
   `;
-
-  console.log('Executing SQL Query:', sql.replace(/\s+/g, ' ').trim()); // Log formatted SQL
-  console.log('Customer ID:', customer_id); // Log the customer ID
 
   db.query(sql, [customer_id], (err, result) => {
     if (err) {
-      console.error('Database error:', err); // Log detailed error
-      return res.status(500).json({ error: 'Database error', details: err.message });
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Database error' });
     }
-    console.log('Query Result:', result); // Log the result
     res.json(result);
   });
 });
@@ -507,11 +504,13 @@ app.delete('/api/restaurant/dishes/:dish_id', (req, res) => {
 });
 
 //Get Order by Restaurant
+
 // Get orders for a specific restaurant
 app.get('/api/restaurant/orders/:restaurant_id', (req, res) => {
   const { restaurant_id } = req.params;
+  const { status } = req.query;
 
-  const sql = `
+  let sql = `
     SELECT 
       o.id AS order_id,
       o.customer_id,
@@ -525,10 +524,18 @@ app.get('/api/restaurant/orders/:restaurant_id', (req, res) => {
     JOIN order_items oi ON o.id = oi.order_id
     JOIN dishes d ON oi.dish_id = d.id
     WHERE o.restaurant_id = ?
-    GROUP BY o.id;
   `;
 
-  db.query(sql, [restaurant_id], (err, result) => {
+  const params = [restaurant_id];
+  
+  if (status && status !== 'All') {
+    sql += ' AND o.status = ?';
+    params.push(status);
+  }
+
+  sql += ' GROUP BY o.id ORDER BY o.created_at DESC';
+
+  db.query(sql, params, (err, result) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Database error' });
@@ -636,29 +643,60 @@ app.post('/api/orders', async (req, res) => {
     return res.status(400).json({ error: 'Required fields are missing' });
   }
 
-  // Start a transaction to ensure atomicity
+  // Start transaction
   db.beginTransaction(async (err) => {
     if (err) return res.status(500).json({ error: 'Database error' });
 
     try {
-      // Insert the order into the orders table
-      const orderSql = 'INSERT INTO orders (customer_id, restaurant_id, status) VALUES (?, ?, ?)';
-      const [orderResult] = await db.promise().query(orderSql, [customer_id, restaurant_id, status]);
+      // 1. Calculate total price
+      const [cartItems] = await db.promise().query(
+        `SELECT c.quantity, d.price 
+         FROM cart c
+         JOIN dishes d ON c.dish_id = d.id
+         WHERE c.customer_id = ?`,
+        [customer_id]
+      );
 
+      const total = cartItems.reduce((sum, item) => 
+        sum + (Number(item.price) * item.quantity), 0);
+
+      // 2. Insert order with calculated total
+      const orderSql = `INSERT INTO orders 
+        (customer_id, restaurant_id, status, total) 
+        VALUES (?, ?, ?, ?)`;
+        
+      const [orderResult] = await db.promise().query(
+        orderSql, 
+        [customer_id, restaurant_id, status, total]
+      );
+
+      // 3. Insert order items
       const orderId = orderResult.insertId;
-
-      // Insert each item into the order_items table
-      const orderItemsSql = 'INSERT INTO order_items (order_id, dish_id, quantity) VALUES ?';
-      const orderItemsValues = items.map((item) => [orderId, item.dish_id, item.quantity]);
+      const orderItemsSql = `INSERT INTO order_items 
+        (order_id, dish_id, quantity) 
+        VALUES ?`;
+      
+      const orderItemsValues = items.map((item) => 
+        [orderId, item.dish_id, item.quantity]
+      );
 
       await db.promise().query(orderItemsSql, [orderItemsValues]);
 
-      // Commit the transaction
+      // 4. Clear cart
+      await db.promise().query(
+        `DELETE FROM cart WHERE customer_id = ?`,
+        [customer_id]
+      );
+
+      // Commit transaction
       await db.promise().commit();
 
-      res.status(201).json({ message: 'Order placed successfully', orderId });
+      res.status(201).json({ 
+        message: 'Order placed successfully', 
+        orderId,
+        total: total.toFixed(2)
+      });
     } catch (error) {
-      // Rollback the transaction in case of error
       await db.promise().rollback();
       console.error('Error placing order:', error);
       res.status(500).json({ error: 'Database error' });
