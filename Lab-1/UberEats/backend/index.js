@@ -286,7 +286,7 @@ app.get('/api/customer/cart/:customer_id', (req, res) => {
 
   // Fetch the cart for the customer
   const sql = `
-    SELECT c.*, d.name, d.price, d.image 
+    SELECT c.*, d.name, d.price, d.image, d.restaurant_id 
     FROM cart c
     JOIN dishes d ON c.dish_id = d.id
     WHERE c.customer_id = ?
@@ -507,13 +507,32 @@ app.delete('/api/restaurant/dishes/:dish_id', (req, res) => {
 });
 
 //Get Order by Restaurant
+// Get orders for a specific restaurant
 app.get('/api/restaurant/orders/:restaurant_id', (req, res) => {
   const { restaurant_id } = req.params;
 
-  // Fetch orders for the restaurant
-  const sql = 'SELECT * FROM orders WHERE restaurant_id = ?';
+  const sql = `
+    SELECT 
+      o.id AS order_id,
+      o.customer_id,
+      o.status,
+      o.created_at,
+      c.name AS customer_name,
+      GROUP_CONCAT(d.name SEPARATOR ', ') AS dish_names,
+      SUM(d.price * oi.quantity) AS total
+    FROM orders o
+    JOIN customers c ON o.customer_id = c.id
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN dishes d ON oi.dish_id = d.id
+    WHERE o.restaurant_id = ?
+    GROUP BY o.id;
+  `;
+
   db.query(sql, [restaurant_id], (err, result) => {
-    if (err) return res.status(500).json({ error: 'Database error' });
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
     res.json(result);
   });
 });
