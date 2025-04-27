@@ -15,6 +15,12 @@ const Profile = () => {
     country: '',
     state: '',
   });
+  const [errors, setErrors] = useState({
+    name: '',
+    profilePicture: '',
+    country: '',
+    state: ''
+  });
 
   const countries = ['United States', 'Canada', 'United Kingdom'];
   const stateAbbreviations = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
@@ -39,15 +45,58 @@ const Profile = () => {
     fetchProfile();
   }, [id]);
 
+  const validateField = (name, value) => {
+    let error = '';
+    switch (name) {
+      case 'name':
+        if (!value.trim()) error = 'Name is required';
+        break;
+      case 'profilePicture':
+        if (value && !/^https?:\/\/.+\..+/.test(value)) {
+          error = 'Invalid URL format';
+        }
+        break;
+      case 'country':
+        if (editMode && !value) error = 'Country is required';
+        break;
+      case 'state':
+        if (editMode && formData.country && !value) error = 'State is required';
+        break;
+      default:
+        break;
+    }
+    return error;
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
     });
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: validateField(name, value)
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      name: validateField('name', formData.name),
+      profilePicture: validateField('profilePicture', formData.profilePicture),
+      country: validateField('country', formData.country),
+      state: validateField('state', formData.state)
+    };
+    setErrors(newErrors);
+    return Object.values(newErrors).every(error => !error);
   };
 
   const handleSave = async () => {
+    if (!validateForm()) return;
+    
     try {
       await updateCustomerProfile(id, formData);
       setProfile((prevProfile) => ({
@@ -86,7 +135,6 @@ const Profile = () => {
           <h1>Profile</h1>
         </div>
 
-        {/* Profile Picture at the Top Center */}
         <div className="profile-picture-container">
           {profile.profilePicture ? (
             <img src={profile.profilePicture} alt="Profile" className="profile-picture" />
@@ -105,7 +153,9 @@ const Profile = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
+                  className={errors.name ? 'error-input' : ''}
                 />
+                {errors.name && <span className="error-message">{errors.name}</span>}
               </div>
               <div className="form-group">
                 <label>Profile Picture URL:</label>
@@ -114,7 +164,9 @@ const Profile = () => {
                   name="profilePicture"
                   value={formData.profilePicture}
                   onChange={handleInputChange}
+                  className={errors.profilePicture ? 'error-input' : ''}
                 />
+                {errors.profilePicture && <span className="error-message">{errors.profilePicture}</span>}
               </div>
               <div className="form-group">
                 <label>Country:</label>
@@ -122,6 +174,7 @@ const Profile = () => {
                   name="country"
                   value={formData.country}
                   onChange={handleInputChange}
+                  className={errors.country ? 'error-input' : ''}
                 >
                   <option value="">Select Country</option>
                   {countries.map((country) => (
@@ -130,6 +183,7 @@ const Profile = () => {
                     </option>
                   ))}
                 </select>
+                {errors.country && <span className="error-message">{errors.country}</span>}
               </div>
               <div className="form-group">
                 <label>State:</label>
@@ -137,6 +191,7 @@ const Profile = () => {
                   name="state"
                   value={formData.state}
                   onChange={handleInputChange}
+                  className={errors.state ? 'error-input' : ''}
                 >
                   <option value="">Select State</option>
                   {stateAbbreviations.map((state) => (
@@ -145,9 +200,9 @@ const Profile = () => {
                     </option>
                   ))}
                 </select>
+                {errors.state && <span className="error-message">{errors.state}</span>}
               </div>
 
-              {/* Save and Cancel buttons with space */}
               <div className="profile-actions">
                 <button className="btn-save" onClick={handleSave}>
                   Save
