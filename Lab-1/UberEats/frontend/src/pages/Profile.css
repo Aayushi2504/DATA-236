@@ -5,6 +5,7 @@
   align-items: center;
   padding: 20px;
   background-color: #f8f9fa;
+  min-height: 100vh;
 }
 
 .profile-card {
@@ -29,11 +30,10 @@
   font-weight: bold;
 }
 
-/* Center Profile Picture */
 .profile-picture-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px; 
+  margin-top: 20px;
 }
 
 .profile-picture {
@@ -41,6 +41,18 @@
   height: 120px;
   border-radius: 50%;
   border: 3px solid white;
+  object-fit: cover;
+}
+
+.profile-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid #ddd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f1f1f1;
 }
 
 .profile-body {
@@ -54,26 +66,103 @@
   border-bottom: 1px solid #eee;
 }
 
-/* Spacing Between Save and Cancel Buttons */
+.info-label {
+  font-weight: bold;
+  color: #555;
+}
+
+.info-value {
+  color: #333;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-weight: bold;
+  color: #555;
+}
+
+.form-group input,
+.form-group select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.error-input {
+  border-color: red !important;
+}
+
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
 .profile-actions {
   display: flex;
   justify-content: center;
-  gap: 15px; /* Space between buttons */
+  gap: 15px;
   margin-top: 20px;
 }
 
-.btn-save, .btn-cancel {
+.btn-save,
+.btn-cancel,
+.btn-edit {
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
+  border: none;
+  font-weight: bold;
+  transition: opacity 0.2s;
 }
 
 .btn-save {
-  background-color: green;
+  background-color: #28a745;
   color: white;
 }
 
 .btn-cancel {
-  background-color: red;
+  background-color: #dc3545;
   color: white;
+}
+
+.btn-edit {
+  background-color: #FF6600;
+  color: white;
+}
+
+.btn-save:hover,
+.btn-cancel:hover,
+.btn-edit:hover {
+  opacity: 0.9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 520px) {
+  .profile-card {
+    margin: 10px;
+  }
+  
+  .profile-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .btn-save,
+  .btn-cancel,
+  .btn-edit {
+    width: 100%;
+  }
 }
