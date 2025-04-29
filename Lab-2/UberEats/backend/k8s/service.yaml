@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: uber-eats-backend-service
+spec:
+  type: NodePort
+  selector:
+    app: uber-eats-backend
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+    nodePort: 30000  # Kubernetes will expose backend at localhost:30000

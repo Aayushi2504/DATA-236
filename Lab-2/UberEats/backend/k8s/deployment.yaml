@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uber-eats-backend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uber-eats-backend
+  template:
+    metadata:
+      labels:
+        app: uber-eats-backend
+    spec:
+      containers:
+      - name: uber-eats-backend
+        image: localhost/uber-eats-backend:latest
+        imagePullPolicy: Never  
+        ports:
+        - containerPort: 5000
+        env:
+        - name: MYSQL_HOST
+          value: "host.docker.internal" # if you want to make env based later

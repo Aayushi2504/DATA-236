@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:5.0
+    container_name: mongo_container
+    ports:
+      - "27017:27017"
+    restart: always
+
+  backend:
+    build: .
+    container_name: backend_container
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_URI=mongodb://mongo_container:27017/uber_eats
+    depends_on:
+      - mongodb
+    command: node server.js
