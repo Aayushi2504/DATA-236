@@ -1,7 +1,7 @@
 const Customer = require('../models/Customer');
 const bcrypt = require('bcryptjs');
 
-// Customer Signup
+// Customer Signup in controller
 exports.signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
