@@ -3,7 +3,7 @@ const Dish = require('../models/Dish');
 const Order = require('../models/Order');
 const bcrypt = require('bcryptjs');
 
-// Restaurant Signup
+// Restaurant's Signup 
 exports.signup = async (req, res) => {
   try {
     const { name, email, password, location, description, contact_info, images, timings } = req.body;
